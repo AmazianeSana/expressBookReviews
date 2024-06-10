@@ -9,9 +9,21 @@ const app = express();
 app.use(express.json());
 
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
-test
+
 app.use("/customer/auth/*", function auth(req,res,next){
 //Write the authenication mechanism here
+const token = req.headers['authorization'];
+
+if (!token) {
+    return res.status(403).send('Token is missing');
+}
+jwt.verify(token, 'your_jwt_secret_key', (err, decoded) => {
+    if (err) {
+        return res.status(401).send('Invalid token');
+    }
+    req.user = decoded;
+    next();
+});
 });
  
 const PORT =5000;
