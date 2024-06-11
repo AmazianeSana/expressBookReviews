@@ -16,8 +16,7 @@ public_users.get('/',function (req, res) {
   if (books.length === 0) {
     return res.status(404).json({ message: "No books available" });
   }
-  const formattedBooks = JSON.stringify(books, null, 2);
-  return res.status(200).send(formattedBooks);
+  return res.status(200).json(books);
 
 });
 
