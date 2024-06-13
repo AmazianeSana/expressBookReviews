@@ -1,7 +1,17 @@
 const express = require('express');
 let books = require("./booksdb.js");
+
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+
+const fetchBooks = async () => {
+ 
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(books);
+    }, 1000);
+  });
+};
 
 // Register a new user
 public_users.post("/register", (req, res) => {
@@ -21,12 +31,13 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the list of books available in the shop
-public_users.get('/', (req, res) => {
-  if (Object.keys(books).length === 0) {
-    return res.status(404).json({ message: "No books available" });
+public_users.get('/', async (req, res) => {
+  try {
+    const bookList = await fetchBooks();
+    return res.status(200).json(bookList);
+  } catch (error) {
+    return res.status(500).json({ message: "An error occurred while fetching books" });
   }
-  
-  return res.status(200).json(books);
 });
 
 // Get book details based on ISBN
