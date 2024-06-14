@@ -13,6 +13,52 @@ const fetchBooks = async () => {
   });
 };
 
+const fetchBookByISBN = (isbn) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const book = books[isbn];
+      if (book) {
+        resolve(book);
+      } else {
+        reject("Book not found");
+      }
+    }, 1000); 
+  });
+};
+
+const fetchBooksByAuthor = (author) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const keys = Object.keys(books);
+      const authorBooks = keys
+        .filter(key => books[key].author.toLowerCase() === author.toLowerCase())
+        .map(key => books[key]);
+
+      if (authorBooks.length > 0) {
+        resolve(authorBooks);
+      } else {
+        reject("No books found for this author");
+      }
+    }, 1000); 
+  });
+};
+
+const fetchBooksByTitle = (title) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const keys = Object.keys(books);
+      const titleBooks = keys
+        .filter(key => books[key].title.toLowerCase() === title.toLowerCase())
+        .map(key => books[key]);
+
+      if (titleBooks.length > 0) {
+        resolve(titleBooks);
+      } else {
+        reject("No books found with this title");
+      }
+    }, 1000); 
+  });
+};
 // Register a new user
 public_users.post("/register", (req, res) => {
   const { username, password } = req.body;
@@ -44,38 +90,38 @@ public_users.get('/', async (req, res) => {
 public_users.get('/isbn/:isbn', (req, res) => {
   const isbn = req.params.isbn;
 
-  const book = books[isbn];
-
-  if (!book) {
-    return res.status(404).json({ message: "Book not found" });
-  }
-
-  return res.status(200).json(book);
+  fetchBookByISBN(isbn)
+    .then(book => {
+      res.status(200).json(book);
+    })
+    .catch(error => {
+      res.status(404).json({ message: error });
+    });
 });
-
 // Get book details based on author
 public_users.get('/author/:author', (req, res) => {
-  const author = req.params.author.toLowerCase();
-  const keys = Object.keys(books); 
-  const authorBooks = keys.filter(key => books[key].author.toLowerCase() === author).map(key => books[key]);
+  const author = req.params.author;
 
-  if (authorBooks.length === 0) {
-    return res.status(404).json({ message: "No books found for this author" });
-  }
-
-  return res.status(200).json(authorBooks);
+  fetchBooksByAuthor(author)
+    .then(books => {
+      res.status(200).json(books);
+    })
+    .catch(error => {
+      res.status(404).json({ message: error });
+    });
 });
 
 // Get all books based on title
 public_users.get('/title/:title', (req, res) => {
-  const title = req.params.title.toLowerCase();
-  const keys = Object.keys(books);
-  const titleBooks = keys.filter(key => books[key].title.toLowerCase() === title).map(key => books[key]);
+  const title = req.params.title;
 
-  if (titleBooks.length === 0) {
-    return res.status(404).json({ message: "No books found with this title" });
-  }
-  return res.status(200).json(titleBooks);
+  fetchBooksByTitle(title)
+    .then(books => {
+      res.status(200).json(books);
+    })
+    .catch(error => {
+      res.status(404).json({ message: error });
+    });
 });
 
 // Get book review based on ISBN
